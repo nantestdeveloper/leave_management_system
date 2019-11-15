@@ -1,0 +1,242 @@
+
+<div class="container">
+<div class="table-wrapper">
+    <div class="table-title">
+        <div class="row">
+            <div class="col-sm-6">
+				<h2>Leave Applications</h2>
+			</div>
+			<div class="col-sm-6">
+			   <% unless  current_user.is_head_user? %>
+			   	
+				<a href="#addEmployeeModal" class="btn btn-success" data-toggle="modal"><i class="material-icons">&#xE147;</i> <span>New Leave Application</span></a>
+			   <%end%>
+				<%= link_to "Logout", destroy_user_session_path, method: :delete, :class => 'btn btn-group'  %>					
+			</div>
+        </div>
+    </div>
+    <% unless current_user.is_head_user? %>
+        <div class="row">
+            <div class="card text-white bg-primary mb-3 col-md-3 p-0" style="max-width: 18rem;">
+			  <div class="card-header text-center">Leaves Credited</div>
+			  <div class="card-body">
+			    <h5 class="card-title text-center"><%= TotalLeaveAvailable.first.leave_total_account %></h5>
+			    
+			  </div>
+			</div>
+			<div class="col-md-1">
+			</div>
+			<div class="card text-white bg-danger mb-3 col-md-3" style="max-width: 18rem;">
+			  <div class="card-header text-center">Leaves Taken </div>
+			  <div class="card-body">
+			    <h5 class="card-title text-center"><%= Leave.all.where(user_id: current_user.id,leave_status: 'Approved').count %></h5>
+			    
+			  </div>
+			</div>
+			<div class="col-md-1">
+			</div>
+			<div class="card text-white bg-success mb-3 col-md-3" style="max-width: 18rem;">
+			  <div class="card-header text-center">Current Leave Balance</div>
+			  <div class="card-body">
+			    <h5 class="card-title text-center"><%= TotalLeaveAvailable.first.leave_total_account - Leave.all.where(user_id: current_user.id,leave_status: 'Approved').count %></h5>
+			    
+			  </div>
+			</div>
+			<br>
+		</div>
+	<%end%>
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+				<th>
+					ID
+				</th>
+                <th style="width: 30px;">Name</th>
+                <th style="width: 30px;">Reason</th>
+                <th >Status</th>
+				<th >Apply Date</th>
+                <th>From Date</th>
+                <th>To Date</th>
+                <% unless  current_user.is_head_user? %>
+                  <th>Actions</th>
+                <%end%>
+            </tr>
+        </thead>
+        <tbody>
+            <% unless  @leaves.nil?%>
+                <% @leaves.each  do |leave| %>
+                    <tr>
+						<td>
+							<%= leave.id %>
+						</td>
+                        <td><%= leave.name%></td>
+                        <td><%= leave.reason_for_leave%></td>
+                        <td>
+                            <% if current_user.is_head_user? %>
+                        	  <%= select_tag "leave_status", options_for_select([ "Approved", "Rejected" ],:selected => leave.leave_status), { :class => 'form-control change-status',id: leave.id }%>
+                            <%else%>
+                              <%=leave.leave_status%>
+                            <%end%>
+                        </td>
+						<td><%=leave.apply_date.present? ? leave.apply_date.strftime("%d-%m-%Y")  : " "%></td>
+                        <td><%=leave.date_from.present? ? leave.date_from.strftime("%d-%m-%Y")  : " "%></td>
+                        <td><%=leave.to_date.present? ? leave.to_date.strftime("%d-%m-%Y")  : " "%></td>
+                        <% unless  current_user.is_head_user? %>
+                        <% if leave.leave_status== 'Applied' %>
+	                        <td>
+	                            <a href="#<%=leave.id%>-editModal" class="edit" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Edit">&#xE254;</i></a>
+	                            <%= link_to delete_leave_path(leave.id), method: :get, confirm: "Are you sure?", :class => 'delete' do %>
+	                               <i class="material-icons" data-toggle="tooltip" title="Delete">&#xE872;</i>
+	                            <%end%>	
+	                        </td>
+                        <%end%>
+                        <%end%>
+                    </tr>
+	                <!-- Edit Modal HTML -->
+					<div id="<%=leave.id%>-editModal" class="modal fade">
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<%= form_for(leave, url: update_leave_path, method: :post ) do |f| %>
+									<div class="modal-header">						
+										<h4 class="modal-title">New Leave Application</h4>
+										<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+									</div>
+									<div class="modal-body">
+
+										<div class="form-group">
+											<label>Name</label>
+											<%= f.text_field :name,class: 'form-control',required: true %>
+										</div>
+										<div class="form-group">
+											<label>Apply date</label>
+											<%= f.date_field :apply_date,class: 'form-control',required: true %>
+										</div>
+										<div class="form-group">
+											<label>From date</label>
+											<%= f.date_field :date_from,class: 'form-control',required: true %>
+										</div>
+										<div class="form-group">
+											<label>To date</label>
+											<%= f.date_field :to_date,class: 'form-control',required: true %>
+										</div>
+										<div class="form-group">
+											<label>Reason for Leave</label>
+											<%= f.text_area :reason_for_leave,class: 'form-control',required: true %>
+											<%= f.hidden_field :leave_status,value: 'Applied' %>
+											<%= f.hidden_field :user_id,value: current_user.id %>
+											<%= f.hidden_field :id,value: leave.id %>
+										</div>
+										<div class="form-group">
+											<label>Reporting Head</label>
+											<%= f.select(:reporting_head_name, options_for_select(User.where(is_head_user: true).pluck(:username,:id)), {}, { :class => 'form-control' }) %>
+										</div>					
+									</div>
+									<div class="modal-footer">
+										<input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
+										<%= f.submit 'Edit',class: 'btn btn-success' %>
+										<!-- <input type="submit" class="btn btn-success" value="Add"> -->
+									</div>
+								<%end%>
+							</div>
+						</div>
+					</div>
+			   <%end%>
+			<%else%>
+			  <h1>No leave application available.</h1>
+            <%end%>
+        </tbody>
+    </table>
+</div>
+</div>
+<!-- Edit Modal HTML -->
+<div id="addEmployeeModal" class="modal fade">
+<div class="modal-dialog">
+	<div class="modal-content">
+		<%= form_for(Leave.new, url: welcome_create_leave_path, method: :post ) do |f| %>
+			<div class="modal-header">						
+				<h4 class="modal-title">New Leave Application</h4>
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+			</div>
+			<div class="modal-body">
+
+				<div class="form-group">
+					<label>Name</label>
+					<%= f.text_field :name,class: 'form-control',required: true %>
+				</div>
+				<div class="form-group">
+					<label>Apply date</label>
+					<%= f.date_field :apply_date,class: 'form-control',required: true %>
+				</div>
+				<div class="form-group">
+					<label>From date</label>
+					<%= f.date_field :date_from,class: 'form-control',required: true %>
+				</div>
+				<div class="form-group">
+					<label>To date</label>
+					<%= f.date_field :to_date,class: 'form-control',required: true %>
+				</div>
+				<div class="form-group">
+					<label>Reason for Leave</label>
+					<%= f.text_area :reason_for_leave,class: 'form-control',required: true %>
+					<%= f.hidden_field :leave_status,value: 'Applied' %>
+					<%= f.hidden_field :user_id,value: current_user.id %>
+				</div>
+				<div class="form-group">
+					<label>Reporting Head</label>
+					<%= f.select(:reporting_head_name, options_for_select(User.where(is_head_user: true).pluck(:username,:id)), {}, { :class => 'form-control' }) %>
+				</div>					
+			</div>
+			<div class="modal-footer">
+				<input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
+				<%= f.submit 'Add',class: 'btn btn-success' %>
+				<!-- <input type="submit" class="btn btn-success" value="Add"> -->
+			</div>
+		<%end%>
+	</div>
+</div>
+</div>
+<!-- Edit Modal HTML -->
+
+
+<script type="text/javascript">
+	$(document).ready(function(){
+	  $(".change-status").change(function(e) {
+        status = event.target.value;
+        leave_id=event.target.id;
+	    $.ajax({
+	      url:"/change_leave_status",
+	      method:"get",
+	      // dataType: "json",
+	      data:{ status : status,leave_id: leave_id},
+	      success :function(data){
+	        winndow.reload();
+	      }
+	    });
+	  });
+	});
+</script>
+<script type="text/javascript">
+	$(document).ready(function(){
+		// Activate tooltip
+		$('[data-toggle="tooltip"]').tooltip();
+		
+		// Select/Deselect checkboxes
+		var checkbox = $('table tbody input[type="checkbox"]');
+		$("#selectAll").click(function(){
+			if(this.checked){
+				checkbox.each(function(){
+					this.checked = true;                        
+				});
+			} else{
+				checkbox.each(function(){
+					this.checked = false;                        
+				});
+			} 
+		});
+		checkbox.click(function(){
+			if(!this.checked){
+				$("#selectAll").prop("checked", false);
+			}
+		});
+	});
+</script>

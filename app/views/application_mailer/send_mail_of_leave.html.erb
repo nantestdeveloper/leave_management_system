@@ -1,0 +1,15 @@
+    <h1>Leave Application </h1>
+    <p>
+      Applicant Name-<%= @leave.name %><br>
+    </p>
+    <p>
+      Apply Date-<%=@leave.apply_date.present? ? @leave.apply_date.strftime("%d-%m-%Y")  : " "%>
+    </p>
+    <p>
+      From-To Date- <%=@leave.date_from.present? ? @leave.date_from.strftime("%d-%m-%Y")  : " "%>----<%=@leave.to_date.present? ? @leave.to_date.strftime("%d-%m-%Y")  : " "%>
+    </p>
+    <p>
+      Reason for leave-<%= @leave.reason_for_leave %>
+    </p>
+    <p>Thanks You!</p>
+ 

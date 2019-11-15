@@ -1,0 +1,2 @@
+class TotalLeaveAvailable < ApplicationRecord
+end

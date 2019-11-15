@@ -1,0 +1,36 @@
+<nav class="navbar navbar-default navbar-fixed-top">
+<div class="container-fluid">
+<div class="navbar-header">
+  <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>                        
+  </button>
+  <a class="navbar-brand" href="#myPage">Leave Application System</a>
+</div>
+<div class="collapse navbar-collapse" id="myNavbar">
+  <ul class="nav navbar-nav navbar-right custom-text">
+    <% if user_signed_in? %>
+
+      <li>
+      <%= link_to "Logout", destroy_user_session_path, method: :delete, :class => 'navbar-link'  %>
+      </li>
+    <% else %>
+      <li>
+      <%= link_to "Sign up", new_user_registration_path, :class => 'navbar-link'  %> 
+       </li>
+       <li>
+         <%= link_to "Login", new_user_session_path, :class => 'navbar-link'  %>
+        </li>
+    <% end %>
+  </ul>
+</div>
+</div>
+</nav>
+
+<!-- Container (The Band Section) -->
+<div class="container text-center p-88">
+
+<h1 style="font-size: 50px;"><b>Leave Management System</b></h1>
+
+</div>
